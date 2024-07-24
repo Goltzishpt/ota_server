@@ -2,16 +2,14 @@
 set -xe
 VENV="venv"
 
-python3.11 -m venv "${VENV}"
-
-source "${VENV}"/bin/activate
-
-pip install -r requirements.txt
-
-pip install flask
+if [ ! -d "${VENV}" ]; then
+    python3.11 -m venv "${VENV}"
+    ${VENV}/bin/pip install --upgrade pip
+    ${VENV}/bin/pip install -r requirements.txt
+fi
 
 if [ "$1" == "test" ]; then
-    pytest
+    ${VENV}/bin/pytest
 else
-    python3 run.py
+    ${VENV}/bin/python run.py
 fi

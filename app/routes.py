@@ -3,25 +3,29 @@ from flask import request, send_file, abort
 from datetime import datetime
 
 from app import app
-from app.utils import log_device_info, trigger_report
+from app.utils import logger, trigger_report, is_valid_mac
+
 
 devices = {}
 
 
 @app.route('/version.txt', methods=['GET'])
 def version():
-    print("All headers received for version.txt request:")
+    logger.info("All headers received for version.txt request:")
     for header, value in request.headers.items():
-        print(f"{header}: {value}")
+        logger.info(f"{header}: {value}")
 
     mac = request.headers.get('br-mac')
     fwv = request.headers.get('br-fwv')
 
-    print(f"br-mac: {mac}")
-    print(f"br-fwv: {fwv}")
+    logger.info(f"br-mac: {mac}")
+    logger.info(f"br-fwv: {fwv}")
 
-    if not mac or not fwv:
+    if not any((mac, fwv)):
         abort(400, "Missing headers")
+
+    if not is_valid_mac(mac):
+        abort(400, "Invalid MAC address")
 
     devices[mac] = devices.get(mac, {'FW Version': None})
     devices[mac]['Last Seen Time'] = datetime.utcnow()
@@ -30,7 +34,7 @@ def version():
         devices[mac]['FW Version'] = fwv
         trigger_report(mac, fwv, "Checked")
 
-    print(
+    logger.info(
         f"Device {mac} checked version at {devices[mac]['Last Seen Time']}. "
         f"Current FW Version: {fwv}"
     )
@@ -40,18 +44,21 @@ def version():
 
 @app.route('/firmware.bin', methods=['GET'])
 def firmware():
-    print("All headers received for firmware.bin request:")
+    logger.info("All headers received for firmware.bin request:")
     for header, value in request.headers.items():
-        print(f"{header}: {value}")
+        logger.info(f"{header}: {value}")
 
     mac = request.headers.get('br-mac')
     fwv = request.headers.get('br-fwv')
 
-    print(f"br-mac: {mac}")
-    print(f"br-fwv: {fwv}")
+    logger.info(f"br-mac: {mac}")
+    logger.info(f"br-fwv: {fwv}")
 
-    if not mac or not fwv:
+    if not any((mac, fwv)):
         abort(400, "Missing headers")
+
+    if not is_valid_mac(mac):
+        abort(400, "Invalid MAC address")
 
     if mac not in devices:
         devices[mac] = {'FW Version': fwv}
@@ -60,8 +67,7 @@ def firmware():
     devices[mac]['FW Version'] = fwv
     trigger_report(mac, fwv, "Updated")
 
-    # Логирование данных устройства
-    print(
+    logger.info(
         f"Device {mac} updated firmware at {devices[mac]['Update Time']}. "
         f"New FW Version: {fwv}"
     )
