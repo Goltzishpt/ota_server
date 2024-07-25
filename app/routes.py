@@ -30,9 +30,12 @@ def version():
     devices[mac] = devices.get(mac, {'FW Version': None})
     devices[mac]['Last Seen Time'] = datetime.utcnow()
 
-    if devices[mac]['FW Version'] != fwv:
-        devices[mac]['FW Version'] = fwv
-        trigger_report(mac, fwv, "Checked")
+    try:
+        if devices[mac]['FW Version'] != fwv:
+            devices[mac]['FW Version'] = fwv
+            trigger_report(mac, fwv, "Checked")
+    except Exception as e:
+        logger.error(e)
 
     logger.info(
         f"Device {mac} checked version at {devices[mac]['Last Seen Time']}. "
@@ -65,7 +68,11 @@ def firmware():
 
     devices[mac]['Update Time'] = datetime.utcnow()
     devices[mac]['FW Version'] = fwv
-    trigger_report(mac, fwv, "Updated")
+
+    try:
+        trigger_report(mac, fwv, "Updated")
+    except Exception as e:
+        logger.error(e)
 
     logger.info(
         f"Device {mac} updated firmware at {devices[mac]['Update Time']}. "
