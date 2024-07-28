@@ -4,6 +4,7 @@ from datetime import datetime
 
 from app import app
 from app.utils import logger, trigger_report, is_valid_mac
+from app.config import FW_VERSION, FW_DIR
 
 
 devices = {}
@@ -42,7 +43,7 @@ def version():
         f"Current FW Version: {fwv}"
     )
 
-    return send_file(os.path.join(app.root_path, 'version.txt'))
+    return send_file(os.path.join(app.root_path, FW_DIR, FW_VERSION, 'version.txt'))
 
 
 @app.route('/firmware.bin', methods=['GET'])
@@ -79,4 +80,4 @@ def firmware():
         f"New FW Version: {fwv}"
     )
 
-    return send_file(os.path.join(app.root_path, 'firmware/firmware.bin'))
+    return send_file(os.path.join(app.root_path, FW_DIR, FW_VERSION, 'firmware.bin'))
