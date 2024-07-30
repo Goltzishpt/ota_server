@@ -1,0 +1,39 @@
+@startuml
+
+class Device {
+  - mac_address: String
+  - fw_version: String
+  - last_seen_time: DateTime
+  - update_time: DateTime
+  --
+  + update_last_seen(time: DateTime)
+  + update_firmware(version: String, time: DateTime)
+}
+
+class OTA_Server {
+  - devices: List<Device>
+  --
+  + handle_request(request: Request)
+  + get_version(request: Request)
+  + get_firmware(request: Request)
+  + send_report(device: Device)
+}
+
+class Request {
+  - path: String
+  - headers: Map<String, String>
+  --
+  + get_header(name: String): String
+}
+
+class Google_Spreadsheet {
+  + receive_report(device: Device)
+}
+
+Device -> OTA_Server : Check Version / Update Firmware
+OTA_Server -> Device : Update Information
+OTA_Server -> Request : Handle HTTP Request
+Request -> OTA_Server : Provide Headers
+OTA_Server -> Google_Spreadsheet : Send Report
+
+@enduml
