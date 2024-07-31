@@ -1,5 +1,6 @@
 import pytest
 from app import app
+from app.config import FW_VERSION
 
 
 @pytest.fixture
@@ -12,7 +13,7 @@ def client():
 def test_version(client):
     response = client.get('/version.txt', headers={'br_mac': '00:11:22:33:44:55', 'br_fwv': 'v1.0.0'})
     assert response.status_code == 200
-    assert b'v1.0.0' in response.data
+    assert FW_VERSION in response.data.decode()
 
 
 def test_firmware(client):
