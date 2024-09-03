@@ -35,15 +35,21 @@ def version():
         if devices[mac]['FW Version'] != fwv:
             devices[mac]['FW Version'] = fwv
             trigger_report(mac, fwv, "Checked")
+    except KeyError as e:
+        logger.error(f"KeyError: {e}")
+        abort(500, "Internal server error")
     except Exception as e:
-        logger.error(e)
+        logger.error(f"Unexpected error: {e}")
+        abort(500, "Internal server error")
 
-    logger.info(
-        f"Device {mac} checked version at {devices[mac]['Last Seen Time']}. "
-        f"Current FW Version: {fwv}"
-    )
-
-    return send_file(os.path.join(app.root_path, FW_DIR, FW_VERSION, 'version.txt'))
+    try:
+        return send_file(os.path.join(app.root_path, FW_DIR, FW_VERSION, 'version.txt'))
+    except FileNotFoundError as e:
+        logger.error(f"FileNotFoundError: {e}")
+        abort(404, "File not found")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        abort(500, "Internal server error")
 
 
 @app.route('/firmware.bin', methods=['GET'])
@@ -72,12 +78,18 @@ def firmware():
 
     try:
         trigger_report(mac, fwv, "Updated")
+    except KeyError as e:
+        logger.error(f"KeyError: {e}")
+        abort(500, "Internal server error")
     except Exception as e:
-        logger.error(e)
+        logger.error(f"Unexpected error: {e}")
+        abort(500, "Internal server error")
 
-    logger.info(
-        f"Device {mac} updated firmware at {devices[mac]['Update Time']}. "
-        f"New FW Version: {fwv}"
-    )
-
-    return send_file(os.path.join(app.root_path, FW_DIR, FW_VERSION, 'firmware.bin'))
+    try:
+        return send_file(os.path.join(app.root_path, FW_DIR, FW_VERSION, 'firmware.bin'))
+    except FileNotFoundError as e:
+        logger.error(f"FileNotFoundError: {e}")
+        abort(404, "File not found")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        abort(500, "Internal server error")
